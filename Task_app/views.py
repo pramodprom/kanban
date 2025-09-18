@@ -16,7 +16,7 @@ def board(request):
         "code_review": Task.objects.filter(status="code_review"),
         "done": Task.objects.filter(status="done"),
     }
-    return render(request, "Task_app/board.html", {"tasks": tasks})
+    return render(request, "Task_app/Board.html", {"tasks": tasks})
 
 
 # Admin page: Add & list tasks
