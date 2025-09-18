@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Task</title>
+  <link rel="stylesheet" href="{%static 'edit.css' %}">
+</head>
+<body>
+  <div class="container">
+    <h1>Edit Task</h1>
+    <form method="post" id="editForm">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+        <a href="{% url 'task_admin' %}" class="btn btn-secondary">← Back</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Confirm before saving
+    document.getElementById("editForm").addEventListener("submit", function(e) {
+      if(!confirm("Are you sure you want to save these changes?")) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>

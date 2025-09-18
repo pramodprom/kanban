@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Tasks</title>
+  <link rel="stylesheet" href="{%static 'task.css' %}">
+  <style>
+
+
+  </style>
+</head>
+<body>
+
+
+  <h1>Task Management (Admin)</h1>
+  <a href="{% url 'board' %}" class="back-button">← Back</a>
+<div class="sidebar">
+  <div>
+    <h2>TaskFlow</h2>
+    <a href="{% url 'board' %}">📋 Board</a>
+    <a href="{% url 'task_admin' %}">➕ Tasks</a>
+    <a href="{% url 'analytics_dashboard' %}">📊 Analytics</a>
+  </div>
+
+  <!-- Dark Mode Toggle pinned at bottom -->
+  <button class="dark-mode-btn">🌙 Dark Mode</button>
+</div>
+
+  <h2>Add Task</h2>
+  <form method="post" class="fade-in">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">+ Add Task</button>
+  </form>
+
+  <h2>All Tasks</h2>
+  <table class="fade-in">
+    <tr>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Assigned To</th>
+      <th>Deadline</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+    {% for task in tasks %}
+      <tr>
+        <td>{{ task.title }}</td>
+        <td>{{ task.description }}</td>
+        <td>{{task.assigned_to}}</td>
+        <td>{{task.deadline}}</td>
+        <td>{{ task.get_status_display }}</td>
+        <td class="actions">
+          <a href="{% url 'edit_task' task.pk %}">Edit</a>
+          <a href="{% url 'delete_task' task.pk %}" class="delete-link">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr class="empty-row"><td colspan="4">No tasks</td></tr>
+    {% endfor %}
+  </table>
+
+  <script>
+    // Fade in table rows
+    document.querySelectorAll("table tr").forEach((row, i) => {
+      setTimeout(() => row.classList.add("fade-in"), i * 80);
+    });
+  </script>
+
+</body>
+</html>

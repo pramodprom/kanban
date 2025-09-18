@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Board</title>
+  <link rel="stylesheet" href="{% static 'board.css' %}">
+</head>
+<body>
+
+<div class="sidebar">
+  <div>
+    <h2>TaskFlow</h2>
+    <a href="{% url 'board' %}">📋 Board</a>
+    <a href="{% url 'task_admin' %}">➕ Tasks</a>
+    <a href="{% url 'analytics_dashboard' %}">📊 Analytics</a>
+  </div>
+
+  <!-- Dark Mode Toggle pinned at bottom -->
+  <button class="dark-mode-btn">🌙 Dark Mode</button>
+</div>
+
+<!-- Filter Panel -->
+<div class="filter-panel">
+  <label>Assigned To: <input type="text" id="filter-assigned" placeholder="Username"></label>
+  <label>Deadline: <input type="date" id="filter-deadline"></label>
+  <button id="filter-btn">Filter</button>
+  <button id="reset-btn">Reset</button>
+</div>
+
+<div class="board">
+  <div class="column" data-status="todo">
+    <h3>To Do ({{ tasks.todo|length }})</h3>
+    {% for task in tasks.todo %}
+      <div class="task" draggable="true" data-id="{{ task.id }}">
+        <div class="task-title">{{ task.title }}</div>
+        <div class="task-desc">{{ task.description }}</div>
+        <div class="assigned">{{task.assigned_to}}</div>
+        <div class="deadline">{{task.deadline|date:"Y-m-d"}}</div>
+        <span class="badge badge-yellow">To Do</span>
+      </div>
+    {% empty %}<p>No tasks</p>{% endfor %}
+  </div>
+  <div class="column" data-status="in_progress">
+    <h3>In Progress ({{ tasks.in_progress|length }})</h3>
+    {% for task in tasks.in_progress %}
+      <div class="task" draggable="true" data-id="{{ task.id }}">
+        <div class="task-title">{{ task.title }}</div>
+        <div class="task-desc">{{ task.description }}</div>
+        <div class="assigned">{{task.assigned_to}}</div>
+        <div class="deadline">{{task.deadline|date:"Y-m-d"}}</div>
+        <span class="badge badge-blue">In Progress</span>
+      </div>
+    {% empty %}<p>No tasks</p>{% endfor %}
+  </div>
+  <div class="column" data-status="code_review">
+    <h3>Code Review ({{ tasks.code_review|length }})</h3>
+    {% for task in tasks.code_review %}
+      <div class="task" draggable="true" data-id="{{ task.id }}">
+        <div class="task-title">{{ task.title }}</div>
+        <div class="task-desc">{{ task.description }}</div>
+        <div class="assigned">{{task.assigned_to}}</div>
+        <div class="deadline">{{task.deadline|date:"Y-m-d"}}</div>
+        <span class="badge badge-purple">Review</span>
+      </div>
+    {% empty %}<p>No tasks</p>{% endfor %}
+  </div>
+  <div class="column" data-status="done">
+    <h3>Done ({{ tasks.done|length }})</h3>
+    {% for task in tasks.done %}
+      <div class="task" draggable="true" data-id="{{ task.id }}">
+        <div class="task-title">{{ task.title }}</div>
+        <div class="task-desc">{{ task.description }}</div>
+        <div class="assigned">{{task.assigned_to}}</div>
+        <div class="deadline">{{task.deadline|date:"Y-m-d"}}</div>
+        <span class="badge badge-red">Done</span>
+      </div>
+    {% empty %}<p>No tasks</p>{% endfor %}
+  </div>
+</div>
+
+<script>
+  // Persistent Dark Mode
+  const body = document.body;
+  const darkModeBtn = document.querySelector('.dark-mode-btn');
+  if(localStorage.getItem('darkMode') === 'true') body.classList.add('dark-mode');
+  darkModeBtn.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+  });
+
+  // Drag & drop
+  let draggedTask = null;
+  document.querySelectorAll('.task').forEach(task => {
+    task.addEventListener('dragstart', () => { draggedTask = task; task.style.opacity = '0.5'; });
+    task.addEventListener('dragend', () => { draggedTask = null; task.style.opacity = '1'; });
+  });
+  document.querySelectorAll('.column').forEach(col => {
+    col.addEventListener('dragover', e => e.preventDefault());
+    col.addEventListener('drop', () => {
+      if (!draggedTask) return;
+      col.appendChild(draggedTask);
+      fetch("{% url 'update_task_status' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "X-CSRFToken": "{{ csrf_token }}" },
+        body: `task_id=${draggedTask.dataset.id}&status=${col.dataset.status}`
+      }).then(res => res.json()).then(data => { if (!data.success) alert("Error updating task!"); });
+    });
+  });
+
+  // Filter functionality
+  const filterAssigned = document.getElementById('filter-assigned');
+  const filterDeadline = document.getElementById('filter-deadline');
+  const filterBtn = document.getElementById('filter-btn');
+  const resetBtn = document.getElementById('reset-btn');
+
+  function applyFilter() {
+    const assignedVal = filterAssigned.value.trim().toLowerCase();
+    const deadlineVal = filterDeadline.value; // YYYY-MM-DD
+    document.querySelectorAll('.task').forEach(task => {
+      const assignedTo = task.querySelector('.assigned').textContent.trim().toLowerCase();
+      let taskDeadline = task.querySelector('.deadline').textContent.trim();
+      if (taskDeadline.includes(' ')) taskDeadline = taskDeadline.split(' ')[0];
+      let show = true;
+      if (assignedVal && !assignedTo.includes(assignedVal)) show = false;
+      if (deadlineVal && taskDeadline !== deadlineVal) show = false;
+      task.style.display = show ? 'block' : 'none';
+    });
+  }
+
+  filterBtn.addEventListener('click', applyFilter);
+  resetBtn.addEventListener('click', () => {
+    filterAssigned.value = '';
+    filterDeadline.value = '';
+    document.querySelectorAll('.task').forEach(task => task.style.display = 'block');
+  });
+</script>
+
+</body>
+</html>

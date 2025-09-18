@@ -1,0 +1,52 @@
+.sidebar {
+  width: 220px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* pushes dark mode button down */
+  padding-top: 30px;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  transition: background 0.3s, color 0.3s;
+}
+
+.sidebar h2 {
+  font-size: 30px;
+  text-align: center;
+  margin-bottom: 25px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.sidebar a{
+  padding: 14px 24px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.3s, transform 0.2s;
+  border-radius: 6px;
+  margin: 0 10px 8px 10px;
+}
+
+.sidebar a:hover {
+  background: #0052cc;
+  transform: scale(1.02);
+}
+
+/* Dark mode button */
+.dark-mode-btn {
+  margin: 20px;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.dark-mode-btn:hover {
+  background: #1e40af;
+}
